@@ -55,3 +55,4 @@ VS Code
 - Install the Python extension.
 - Select the interpreter `.venv`.
 - Use the Run & Debug panel to run or debug (a sample launch config is in `.vscode/launch.json`).
+https://www.linkedin.com/posts/anshika-bhadauriya-591340309_techinternship-maincrafts-activity-7416166912054910976-H1BC?utm_source=share&utm_medium=member_desktop&rcm=ACoAAE6Juz0BGFfsNEmZRh0YlHiT4RNNFjdXETY
