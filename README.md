@@ -21,74 +21,65 @@ Quick start (macOS / Linux)
    ```
 3. Initialize the SQLite DB:
    ```
-   flask init-db
+   # Python-Full-Stack
+
+   A minimal full-stack example using Flask (backend), HTML templates (frontend), and SQLite (database).
+
+   This project provides user registration/login and a secure, session-protected student management CRUD interface (add/view/edit/delete students). Passwords are stored hashed and all student routes require a logged-in user.
+
+   Quick overview
+   - Templates: located in the `Template/` folder (login, register, dashboard, student management pages).
+   - Static assets: `Static/style.css` (responsive styles).
+   - App: `app.py` — Flask application. Starts the DB on first run and exposes routes for auth and student CRUD.
+   - Database: `database.db` (SQLite) in the project root. The app creates `users` and `students` tables automatically.
+   - Export: `scripts/export_recent_logins.py` writes `exports/recent_logins.csv`.
+
+   Getting started
+   1. Create a virtual environment and activate it:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
    ```
-4. Run the app:
+   2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
    ```
+   3. Start the app (this calls `init_db()` automatically to create missing tables):
+   ```bash
    python app.py
    ```
-   or
+   4. Open the app in your browser:
+     - Register: http://127.0.0.1:5000/register
+     - Login: http://127.0.0.1:5000/login
+     - Dashboard (after login): http://127.0.0.1:5000/dashboard
+     - Students manager: http://127.0.0.1:5000/students
+
+   Notes
+   - Only logged-in users can access `/students`, `/students/add`, `/students/edit/<id>`, and `/students/delete/<id>`. Direct URL access without login redirects to `/login`.
+   - Passwords are hashed via Werkzeug; the app uses Flask `session` for authentication.
+
+   Export recent logins
+   Run the export script to generate a CSV of recent user activity:
+   ```bash
+   python scripts/export_recent_logins.py
    ```
-   FLASK_APP=app.py flask run
-   ```
-5. Open http://127.0.0.1:5000/ in your browser. The page fetches `/api/hello` and displays the message retrieved from SQLite.
+   Output is written to `exports/recent_logins.csv`.
 
-Git & GitHub
-- Initialize local git:
-  ```
-  git init
-  git add .
-  git commit -m "Initial commit"
-  ```
-- Option A (GitHub web UI): create a new repo on github.com, copy the remote URL, then:
-  ```
-  git remote add origin https://github.com/<you>/<repo>.git
-  git branch -M main
-  git push -u origin main
-  ```
-# Python-Full-Stack
+   Project structure (important files)
+   - `app.py` — Flask app and routes.
+   - `Template/` — HTML templates used by the app.
+   - `Static/style.css` — global, responsive stylesheet.
+   - `scripts/export_recent_logins.py` — export helper.
+   - `requirements.txt` — Python dependencies.
 
-A minimal full-stack example using Flask (backend), plain HTML/CSS templates (frontend), and SQLite (database). This repo implements registration, login, a simple dashboard, and a small API for fetching registered users.
+   Security
+   - Passwords are never stored as plaintext.
+   - Session-based access control prevents unauthenticated CRUD operations.
 
-What we built
-- Frontend: templates located in the `Template` folder — `login.html`, `register.html`, and `dashboard.html`.
-- Backend: `app. py` (Flask) with routes `/register`, `/login`, `/dashboard`, `/logout`, and `/api/users`.
-- Database: SQLite database created at `database.db` (the app will also handle an existing `databse.db` if present). The app creates two tables: `users` and `Newtable` (simple username/password store).
-
-Key features
-- Passwords are hashed using Werkzeug (`generate_password_hash` / `check_password_hash`).
-- Client-side registration form includes validation and submits via POST (fetch). Successful registration stores the user in `users` and a username entry in `Newtable`.
-- The dashboard displays the current user and a list of usernames from `Newtable`.
-- A JSON endpoint `/api/users` returns the list of registered users (without password hashes) for real-time fetch.
-- If a pre-existing DB file is invalid, the app backs it up (adds `.bak` suffix) and creates a fresh database automatically.
-
-Files of interest
-- `app. py` — main Flask app and DB initialization (note: filename contains a space in this workspace).
-- `Template/login.html` — login form template.
-- `Template/register.html` — registration form with client-side validation and fetch submit.
-- `Template/dashboard.html` — dashboard template that lists registered usernames.
-- `database.db` — SQLite database file created at runtime `databse.db` 
-
-Quick start (Linux/macOS)
-1. Create and activate a virtual environment:
+   If you want, I can:
+   - Create a test user automatically for quicker testing.
+   - Run the server and open the students page in your browser.
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-```
-2. Install dependencies (either with `requirements.txt` if you add one, or directly):
-```bash
-pip install flask werkzeug
-```
-3. Run the app (this runs `init_db()` on startup to create required tables):
-```bash
+
 python "app. py"
-```
-4. Visit the app in your browser:
-   - Registration: http://127.0.0.1:5000/register
-   - Login: http://127.0.0.1:5000/login
-   - Dashboard (after login): http://127.0.0.1:5000/dashboard
-
-
-```
-
 

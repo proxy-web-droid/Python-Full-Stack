@@ -4,10 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Register</title>
-  <style>body{font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:3rem auto;padding:1rem}form{display:flex;flex-direction:column}label{margin-top:.5rem}input{padding:.5rem;margin-top:.25rem}button{margin-top:1rem;padding:.6rem}a{color:#0366d6}</style>
 </head>
-<body>
-  <h1>Create Account</h1>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="container">
+  <div class="topbar"><h1>Create Account</h1></div>
+  <div class="card mb-2">
   <form id="registerForm" method="post" action="/register">
     <label for="name">Full name</label>
     <input id="name" name="name" type="text" required>
@@ -23,8 +25,8 @@
 
     <button id="createBtn" type="submit">Create account</button>
   </form>
-
-  <p>Already have an account? <a href="/login">Sign in</a></p>
+  </div>
+  <p class="mt-1">Already have an account? <a href="/login">Sign in</a></p>
 
   <div id="msg" aria-live="polite" style="color:#b22222;margin-top:1rem"></div>
 

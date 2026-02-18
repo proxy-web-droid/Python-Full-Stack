@@ -4,22 +4,39 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Dashboard</title>
-  <style>body{font-family:Arial,Helvetica,sans-serif;max-width:720px;margin:3rem auto;padding:1rem}a{color:#0366d6}</style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-  <h1>Dashboard</h1>
-  <p>Welcome to your dashboard, <strong id="username">{{ user.name }}</strong>.</p>
-  <p><a href="/logout">Log out</a></p>
+<body class="container">
+  <div class="topbar"><h1>Dashboard</h1><div class="actions"><a href="/students" class="btn">Manage Students</a><a href="/logout" class="btn secondary">Log out</a></div></div>
 
-  <h2>Registered usernames (Newtable)</h2>
-  {% if newusers %}
-    <ul>
-      {% for u in newusers %}
-        <li>{{ u.username }} — joined {{ u.created_at }}</li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No registered users yet.</p>
-  {% endif %}
+  <div class="card">
+    <p>Welcome to your dashboard, <strong id="username">{{ user.name }}</strong>.</p>
+
+    <div class="mb-2">
+      <h3 class="mb-1">Registered usernames</h3>
+      {% if newusers %}
+        <ul>
+          {% for u in newusers %}
+            <li class="small">{{ u.username }} — joined {{ u.created_at }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">No registered users yet.</p>
+      {% endif %}
+    </div>
+
+    <div>
+      <h3 class="mb-1">Recent Students</h3>
+      {% if students_preview %}
+        <ul>
+          {% for s in students_preview %}
+            <li class="small">{{ s.name }} — {{ s.course }} — {{ s.email }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">No students yet. <a href="/students/add">Add a student</a></p>
+      {% endif %}
+    </div>
+  </div>
 </body>
 </html>

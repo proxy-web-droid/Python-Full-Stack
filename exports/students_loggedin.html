@@ -1,0 +1,66 @@
+HTTP/1.1 200 OK
+Server: Werkzeug/3.1.5 Python/3.12.1
+Date: Wed, 18 Feb 2026 21:17:28 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 1943
+Vary: Cookie
+Connection: close
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Students</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;max-width:900px;margin:2rem auto;padding:1rem}table{width:100%;border-collapse:collapse}th,td{padding:.5rem;border:1px solid #ddd;text-align:left}a.button{display:inline-block;padding:.35rem .6rem;background:#0366d6;color:#fff;border-radius:4px;text-decoration:none}form{display:inline}</style>
+</head>
+<body>
+  <h1>Students</h1>
+  <p><a href="/dashboard">Back to dashboard</a> | <a class="button" href="/students/add">Add Student</a> | <a href="/logout">Log out</a></p>
+
+  
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Course</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>3</td>
+          <td>Harihar das</td>
+          <td>harihardas@gmail.com</td>
+          <td>Supplychain management</td>
+          <td>
+            <a href="/students/edit/3">Edit</a>
+            <!-- Delete via POST to prevent direct GET deletion -->
+            <form method="post" action="/students/delete/3" onsubmit="return confirm('Delete this student?');">
+              <button type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        
+        <tr>
+          <td>1</td>
+          <td>Shivanshi</td>
+          <td>shivanshi@gmail.com</td>
+          <td>Graphic designer</td>
+          <td>
+            <a href="/students/edit/1">Edit</a>
+            <!-- Delete via POST to prevent direct GET deletion -->
+            <form method="post" action="/students/delete/1" onsubmit="return confirm('Delete this student?');">
+              <button type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  
+</body>
+</html>

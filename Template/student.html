@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Students</title>
+</head>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="container">
+  <div class="topbar"><h1>Students</h1><div class="actions"><a href="/dashboard" class="btn secondary">Back</a><a class="btn" href="/students/add">Add Student</a></div></div>
+  <div class="card">
+
+  {% if students and students|length > 0 %}
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Course</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td>{{ s.id }}</td>
+          <td>{{ s.name }}</td>
+          <td>{{ s.email }}</td>
+          <td>{{ s.course }}</td>
+          <td>
+            <a href="/students/edit/{{ s.id }}">Edit</a>
+            <!-- Delete via POST to prevent direct GET deletion -->
+            <form method="post" action="/students/delete/{{ s.id }}" onsubmit="return confirm('Delete this student?');">
+              <button type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No students found. <a href="/students/add">Add the first student</a>.</p>
+  {% endif %}
+  </div>
+</body>
+</html>

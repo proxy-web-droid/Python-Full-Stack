@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Edit Student</title>
+</head>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="container">
+  <div class="topbar"><h1>Edit Student</h1><div class="actions"><a href="/students" class="btn secondary">Back</a></div></div>
+  <div class="card">
+  <!-- Update student details: separate form from delete to make actions explicit -->
+  <form method="post" action="/students/edit/{{ student.id }}">
+    <label>Name
+      <input type="text" name="name" value="{{ student.name }}" required>
+    </label>
+    <label>Email
+      <input type="email" name="email" value="{{ student.email }}" required>
+    </label>
+    <label>Course
+      <input type="text" name="course" value="{{ student.course }}" required>
+    </label>
+    <button type="submit">Update Student</button>
+  </form>
+  <!-- Separate delete form: POST only to avoid accidental deletes via GET -->
+  <form method="post" action="/students/delete/{{ student.id }}" onsubmit="return confirm('Permanently delete this student?');" style="margin-top:1rem">
+    <button type="submit" class="btn danger">Delete Student</button>
+  </form>
+  </div>
+</body>
+</html>

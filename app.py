@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 APP_DIR = os.path.dirname(__file__)
 DB_PATH = os.path.join(APP_DIR, 'database.db')
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='Template', static_folder='Static')
 app.secret_key = os.environ.get('FLASK_SECRET', 'dev-secret-change-me')
 
 
@@ -25,6 +25,18 @@ def init_db():
       name TEXT NOT NULL,
       email TEXT NOT NULL UNIQUE,
       password_hash TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    '''
+  )
+  # Create students table for CRUD operations
+  conn.execute(
+    '''
+    CREATE TABLE IF NOT EXISTS students (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      course TEXT NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     '''
@@ -93,10 +105,101 @@ def dashboard():
     return redirect('/login')
   conn = get_db_connection()
   user = conn.execute('SELECT id, name, email, created_at FROM users WHERE id = ?', (uid,)).fetchone()
+  # include a short list of students for quick access (no sensitive data)
+  newusers = conn.execute('SELECT id, name AS username, created_at FROM users ORDER BY created_at DESC LIMIT 5').fetchall()
+  students_preview = conn.execute('SELECT id, name, email, course FROM students ORDER BY created_at DESC LIMIT 5').fetchall()
   conn.close()
   if not user:
     return redirect('/login')
-  return render_template('dashboard.html', user=user)
+  return render_template('dashboard.html', user=user, newusers=newusers, students_preview=students_preview)
+
+
+### Student management routes (CRUD) ###
+
+
+def require_login():
+  if not session.get('user_id'):
+    return False
+  return True
+
+
+@app.route('/students')
+def students():
+  if not require_login():
+    return redirect('/login')
+  conn = get_db_connection()
+  rows = conn.execute('SELECT id, name, email, course, created_at FROM students ORDER BY id DESC').fetchall()
+  conn.close()
+  students = [dict(r) for r in rows]
+  return render_template('student.html', students=students)
+
+
+@app.route('/students/add', methods=['GET', 'POST'])
+def add_student():
+  if not require_login():
+    return redirect('/login')
+  if request.method == 'GET':
+    return render_template('add_student.html')
+
+  name = request.form.get('name', '').strip()
+  email = request.form.get('email', '').strip().lower()
+  course = request.form.get('course', '').strip()
+
+  if not name or not email or not course:
+    return 'Missing fields', 400
+
+  try:
+    conn = get_db_connection()
+    conn.execute('INSERT INTO students (name, email, course) VALUES (?,?,?)', (name, email, course))
+    conn.commit()
+    conn.close()
+  except sqlite3.IntegrityError:
+    return 'Email already exists for another student', 409
+
+  return redirect('/students')
+
+
+@app.route('/students/edit/<int:sid>', methods=['GET', 'POST'])
+def edit_student(sid):
+  if not require_login():
+    return redirect('/login')
+  conn = get_db_connection()
+  student = conn.execute('SELECT id, name, email, course FROM students WHERE id = ?', (sid,)).fetchone()
+  conn.close()
+  if not student:
+    return 'Student not found', 404
+
+  if request.method == 'GET':
+    return render_template('edit_student.html', student=student)
+
+  # POST -> update student
+  name = request.form.get('name', '').strip()
+  email = request.form.get('email', '').strip().lower()
+  course = request.form.get('course', '').strip()
+
+  if not name or not email or not course:
+    return 'Missing fields', 400
+
+  try:
+    conn = get_db_connection()
+    conn.execute('UPDATE students SET name = ?, email = ?, course = ? WHERE id = ?', (name, email, course, sid))
+    conn.commit()
+    conn.close()
+  except sqlite3.IntegrityError:
+    return 'Email already exists for another student', 409
+
+  return redirect('/students')
+
+
+@app.route('/students/delete/<int:sid>', methods=['POST'])
+def delete_student(sid):
+  if not require_login():
+    return redirect('/login')
+  conn = get_db_connection()
+  conn.execute('DELETE FROM students WHERE id = ?', (sid,))
+  conn.commit()
+  conn.close()
+  return redirect('/students')
 
 
 @app.route('/logout')
