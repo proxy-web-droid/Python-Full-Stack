@@ -67,7 +67,7 @@ Files of interest
 - `Template/login.html` — login form template.
 - `Template/register.html` — registration form with client-side validation and fetch submit.
 - `Template/dashboard.html` — dashboard template that lists registered usernames.
-- `database.db` — SQLite database file created at runtime (or `databse.db` if you had a misspelled file).
+- `database.db` — SQLite database file created at runtime `databse.db` 
 
 Quick start (Linux/macOS)
 1. Create and activate a virtual environment:
@@ -88,19 +88,7 @@ python "app. py"
    - Login: http://127.0.0.1:5000/login
    - Dashboard (after login): http://127.0.0.1:5000/dashboard
 
-Environment
-- Optionally set `FLASK_SECRET` to a production secret before running the app:
-```bash
-export FLASK_SECRET="your-production-secret"
+
 ```
 
-Notes and troubleshooting
-- The app expects templates in the `Template` directory and static assets in `Static`. If you move folders, update `app. py` accordingly.
-- If you see `sqlite3.DatabaseError: file is not a database`, the app will back up the problematic DB file to `database.db.bak` (or `.bakN`) and create a fresh database.
-- The repo currently installs minimal dependencies at runtime; consider adding a `requirements.txt` with pinned versions for reproducible installs.
 
-Want me to:
-- add a `requirements.txt` and a simple `Makefile` for quick setup? Reply and I'll add them.
-
----
-Updated to reflect the current full-stack implementation (Flask backend, HTML templates, SQLite database).
