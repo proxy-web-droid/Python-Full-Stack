@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Register</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:3rem auto;padding:1rem}form{display:flex;flex-direction:column}label{margin-top:.5rem}input{padding:.5rem;margin-top:.25rem}button{margin-top:1rem;padding:.6rem}a{color:#0366d6}</style>
+</head>
+<body>
+  <h1>Create Account</h1>
+  <form id="registerForm" method="post" action="/register">
+    <label for="name">Full name</label>
+    <input id="name" name="name" type="text" required>
+
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" required>
+
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" required>
+
+    <label for="confirm">Confirm password</label>
+    <input id="confirm" name="confirm" type="password" required>
+
+    <button id="createBtn" type="submit">Create account</button>
+  </form>
+
+  <p>Already have an account? <a href="/login">Sign in</a></p>
+
+  <div id="msg" aria-live="polite" style="color:#b22222;margin-top:1rem"></div>
+
+  <script>
+  (function(){
+    const form = document.getElementById('registerForm');
+    const msg = document.getElementById('msg');
+
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      msg.textContent = '';
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirm').value;
+
+      if (!name) { msg.textContent = 'Please enter your name.'; return; }
+      if (password.length < 6) { msg.textContent = 'Password must be at least 6 characters.'; return; }
+      if (password !== confirm) { msg.textContent = 'Passwords do not match.'; return; }
+
+      const fd = new FormData();
+      fd.append('name', name);
+      fd.append('email', email);
+      fd.append('password', password);
+
+      try {
+        const res = await fetch(form.action, { method: 'POST', body: fd });
+        if (res.redirected) {
+          window.location = res.url;
+          return;
+        }
+        if (res.ok) {
+          window.location = '/login';
+        } else {
+          const text = await res.text();
+          msg.textContent = text || 'Registration failed. Please try again.';
+        }
+      } catch (err) {
+        msg.textContent = 'Network error. Please try again.';
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

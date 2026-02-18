@@ -1,30 +1,198 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session, jsonify
 import sqlite3
+import os
+from werkzeug.security import generate_password_hash, check_password_hash
 
-app = Flask(__name__)
+APP_DIR = os.path.dirname(__file__)
+# Prefer existing file if user mis-typed database filename in workspace
+db_candidate1 = os.path.join(APP_DIR, 'database.db')
+db_candidate2 = os.path.join(APP_DIR, 'databse.db')
+# Prefer the correctly spelled database file; fall back to the misspelled one only if needed
+if os.path.exists(db_candidate1):
+  DB_PATH = db_candidate1
+elif os.path.exists(db_candidate2):
+  DB_PATH = db_candidate2
+else:
+  DB_PATH = db_candidate1
+
+app = Flask(__name__, template_folder=os.path.join(APP_DIR, 'Template'), static_folder=os.path.join(APP_DIR, 'Static'))
+app.secret_key = os.environ.get('FLASK_SECRET', 'dev-secret-change-me')
+
+
 def get_db_connection():
-  conn = sqlite3.connect('database.db')
+  conn = sqlite3.connect(DB_PATH)
+  conn.row_factory = sqlite3.Row
+  return conn
+
+
+def init_db():
+  # Try to create required tables. If the DB file exists but is invalid
+  # sqlite3 will raise DatabaseError; in that case back up the file and
+  # create a fresh database.
+  try:
+    conn = get_db_connection()
+    conn.execute(
+      '''
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+      '''
+    )
+    # Newtable stores a simple username/password record (password hashed)
+    conn.execute(
+      '''
+      CREATE TABLE IF NOT EXISTS Newtable (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+      '''
+    )
+    conn.commit()
+    conn.close()
+  except sqlite3.DatabaseError:
+    # Backup the bad DB file if present
+    if os.path.exists(DB_PATH):
+      bak = DB_PATH + '.bak'
+      idx = 1
+      while os.path.exists(bak):
+        bak = DB_PATH + f'.bak{idx}'
+        idx += 1
+      os.rename(DB_PATH, bak)
+
+    # Create a fresh database and create tables
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-      return conn
-      @app.route('/', methods=['GET', 'POST'])
-      def index():
-        conn = get_db_connection()
-          if request.method == 'POST':
-              name = request.form['name']
-              email = request.form['email']
-              conn.execute(
-                                'INSERT INTO users (name, email) Values (?,?)', (name, email)
-                      )
-              conn.commit()
-              return redirect ('/')
-                                
-           users = conn.execute('SELECT * From users').fetchall()
-           conn.close() 
-           return render_template('index.html', users=users) 
+    conn.execute(
+      '''
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+      '''
+    )
+    conn.execute(
+      '''
+      CREATE TABLE Newtable (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+      '''
+    )
+    conn.commit()
+    conn.close()
 
-if __name__=='__main__':
 
-   app.run(debug=True)
+@app.route('/')
+def index():
+  return redirect('/login')
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+  if request.method == 'GET':
+    return render_template('register.html')
+
+  # POST: create user
+  name = request.form.get('name', '').strip()
+  email = request.form.get('email', '').strip().lower()
+  password = request.form.get('password', '')
+
+  if not name or not email or not password:
+    return 'Missing fields', 400
+  if len(password) < 6:
+    return 'Password too short', 400
+
+  password_hash = generate_password_hash(password)
+
+  try:
+    conn = get_db_connection()
+    conn.execute('INSERT INTO users (name, email, password_hash) VALUES (?,?,?)',
+           (name, email, password_hash))
+    conn.commit()
+    conn.close()
+  except sqlite3.IntegrityError:
+    return 'Email already registered', 409
+
+  # Also create a simple username/password entry in Newtable.
+  # We'll use the email as the username to ensure uniqueness.
+  try:
+    conn = get_db_connection()
+    conn.execute('INSERT INTO Newtable (username, password) VALUES (?,?)',
+           (email, password_hash))
+    conn.commit()
+    conn.close()
+  except sqlite3.IntegrityError:
+    # If username already exists, ignore since users table already has unique email
+    pass
+
+  return redirect('/login')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+  if request.method == 'GET':
+    return render_template('login.html')
+
+  email = request.form.get('email', '').strip().lower()
+  password = request.form.get('password', '')
+
+  conn = get_db_connection()
+  user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+  conn.close()
+
+  if user and check_password_hash(user['password_hash'], password):
+    session['user_id'] = user['id']
+    return redirect('/dashboard')
+
+  return 'Invalid credentials', 401
+
+
+@app.route('/dashboard')
+def dashboard():
+  uid = session.get('user_id')
+  if not uid:
+    return redirect('/login')
+  conn = get_db_connection()
+  user = conn.execute('SELECT id, name, email, created_at FROM users WHERE id = ?', (uid,)).fetchone()
+  # fetch simple username list from Newtable
+  newrows = conn.execute('SELECT id, username, created_at FROM Newtable ORDER BY created_at DESC').fetchall()
+  conn.close()
+  if not user:
+    return redirect('/login')
+  newusers = [dict(r) for r in newrows]
+  return render_template('dashboard.html', user=user, newusers=newusers)
+
+
+@app.route('/logout')
+def logout():
+  session.pop('user_id', None)
+  return redirect('/login')
+
+
+@app.route('/api/users')
+def api_users():
+  # Return basic user list for real-time fetch (no passwords)
+  conn = get_db_connection()
+  rows = conn.execute('SELECT id, name, email, created_at FROM users ORDER BY created_at DESC').fetchall()
+  conn.close()
+  users = [dict(r) for r in rows]
+  return jsonify(users)
+
+
+if __name__ == '__main__':
+  init_db()
+  app.run(host='0.0.0.0', port=5000, debug=True)
 
                       
  

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dashboard</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;max-width:720px;margin:3rem auto;padding:1rem}a{color:#0366d6}</style>
+</head>
+<body>
+  <h1>Dashboard</h1>
+  <p>Welcome to your dashboard, <strong id="username">{{ user.name }}</strong>.</p>
+  <p><a href="/logout">Log out</a></p>
+
+  <h2>Registered usernames (Newtable)</h2>
+  {% if newusers %}
+    <ul>
+      {% for u in newusers %}
+        <li>{{ u.username }} — joined {{ u.created_at }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No registered users yet.</p>
+  {% endif %}
+</body>
+</html>
