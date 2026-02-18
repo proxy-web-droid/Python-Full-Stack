@@ -1,0 +1,16 @@
+Stored database export
+Generated: 2026-02-18
+
+--- users ---
+id,name,email,created_at
+1,Anshika bhadauriya,anshikabhadauriya69@gmail.com,2026-02-18 19:17:50
+
+--- Newtable ---
+id,username,created_at
+1,anshikabhadauriya69@gmail.com,2026-02-18 19:17:50
+
+Files also available in the `exports/` folder:
+- exports/users.csv
+- exports/newtable.csv
+- exports/users.json
+- exports/newtable.json
