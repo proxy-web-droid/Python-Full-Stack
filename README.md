@@ -76,10 +76,5 @@ Quick start (macOS / Linux)
    - Passwords are never stored as plaintext.
    - Session-based access control prevents unauthenticated CRUD operations.
 
-   If you want, I can:
-   - Create a test user automatically for quicker testing.
-   - Run the server and open the students page in your browser.
-```bash
-
-python "app. py"
+   
 
